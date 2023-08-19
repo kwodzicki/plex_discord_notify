@@ -1,0 +1,11 @@
+[Unit]
+Description=Relay to publish Plex webhook events to Discord
+After=plexmediaserver.service
+
+[Service]
+Type=simple
+User=plex
+ExecStart=/usr/local/bin/python3 /path/to/plex_discord_notify
+
+[Install]
+WantedBy=multi-user.target
