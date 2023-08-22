@@ -1,7 +1,19 @@
+"""
+Utilities for webhook processing
+
+"""
+
 import logging
 import os
- 
+
 def load_hook_url():
+    """
+    Load Discord webhook URL
+
+    Returns:
+        str : URL to the Discord webhook
+
+    """
 
     log = logging.getLogger(__name__)
     url_file = os.path.join(
@@ -35,7 +47,7 @@ def event_filter(event, filters):
     event_type = event.get('json', {}).get('event', '')
     if event_type not in filters:
         return False
- 
+
     return True
 
 def library_filter(event, filters):
@@ -64,5 +76,5 @@ def library_filter(event, filters):
     )
     if lib_type not in filters:
         return False
- 
-    return True 
+
+    return True

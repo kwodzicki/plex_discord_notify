@@ -1,3 +1,11 @@
+"""
+Main fucntion for socket listening
+
+Listen to a socket for incoming Plex wehbooks and
+process them in threads.
+
+"""
+
 import logging
 import signal
 import socket
@@ -12,21 +20,33 @@ signal.signal(signal.SIGINT,  stop_handler)
 signal.signal(signal.SIGTERM, stop_handler)
 
 def main(host='localhost', port=5000, **kwargs):
+    """
+    Main function for package
+
+    Keyword arguments:
+        host (str) : Name/IP of the host to listen on
+        port (int) : Port to list for Plex webhook on
+        **kwargs : All others passed to parsing thread.
+
+    Returns:
+        None.
+
+    """
 
     log = logging.getLogger(__name__)
     log.debug("Setting up socket on %s:%d", host, port,)
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_obj:
+        s_obj.settimeout(
             kwargs.get('timeout', TIMEOUT)
         )
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind( (host, port) )
-        s.listen()
+        s_obj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s_obj.bind( (host, port) )
+        s_obj.listen()
 
         while is_running():
             try:
-                conn, addr = s.accept()
-            except socket.timeout as err:
+                conn, addr = s_obj.accept()
+            except socket.timeout:
                 continue
 
             _ = Thread(
@@ -36,13 +56,33 @@ def main(host='localhost', port=5000, **kwargs):
             ).start()
     log.info("Socket closed")
 
-def process_webhook(data, *args, event_filters=None, library_filter=None, **kwargs):
+def process_webhook(data, *args, event_filters=None, library_filters=None, **kwargs):
+    """
+    Callback function for webhook processing
+
+    This function applies filters to Plex webhooks before
+    passing events to the Discord formatters. 
+
+    Arguments:
+        data (bytes) : Byte array of data received from socket
+        *args : All other arguments are ignored
+
+    Keyword arguments:
+        event_filters (str,list,tuple) : Types of events that should be
+            sent to Discord
+        library_filters (str,list,tuple) : Types of library media that
+            are to be sent to Discord
+        **kwargs : All other silently ignored
+
+    Returns:
+        ?
+    """
 
     event = plex_webhook.parse_webhook(data)
     if not utils.event_filter(event, event_filters):
-        return
-    if not utils.library_filter(event, library_filter):
-        return 
+        return None
+    if not utils.library_filter(event, library_filters):
+        return None
     return discord_webhook.process_plex_webhook(event)
 
 def on_new_client(conn, addr, callback, *args, bufsize=BUFSIZE, timeout=TIMEOUT, **kwargs):
@@ -75,14 +115,14 @@ def on_new_client(conn, addr, callback, *args, bufsize=BUFSIZE, timeout=TIMEOUT,
     """
 
     log = logging.getLogger(__name__)
-    data = b'' 
+    data = b''
     with conn:
         conn.settimeout(timeout)
         log.debug("Connected by %s", addr)
         while True:
             try:
                 tmp = conn.recv(bufsize)
-            except socket.timeout as err:
+            except socket.timeout:
                 log.debug('Recieved timed out')
                 break
 

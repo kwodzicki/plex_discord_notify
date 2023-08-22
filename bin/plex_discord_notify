@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-import logging
-from logging.handlers import RotatingFileHandler
-import os
+"""
+CLI for running Plex and Discord Webhook
+
+"""
+
 import argparse
 
 from plex_discord_notify import ROT_HANDLER, main
@@ -10,14 +12,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description     = "Simple relay to capture Plex webhooks, format them, and send to Discord",
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter, 
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         '--host',
         type    = str,
         default = 'localhost',
         help    = 'Host URL/name to listen for webhooks on',
-    ) 
+    )
     parser.add_argument(
         '--port',
         type    = int,
@@ -30,7 +32,7 @@ if __name__ == "__main__":
         nargs   = '+',
         default = 'library.new',
         help    = 'Any number of Plex wehbook events to enable for Discord messaging'
-    ) 
+    )
     parser.add_argument(
         '-l', '--library-filters',
         type    = str,
@@ -46,14 +48,14 @@ if __name__ == "__main__":
         type    = int,
         default = 30,
         help    = 'Logging level for the log file',
-    ) 
+    )
     args = parser.parse_args()
 
     ROT_HANDLER.setLevel(args.log_level)
- 
+
     main.main(
         host            = args.host,
         port            = args.port,
         event_filters   = args.event_filters,
-        library_filtesr = args.library_filters,
+        library_filters = args.library_filters,
     )

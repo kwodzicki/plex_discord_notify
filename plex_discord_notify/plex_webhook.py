@@ -1,4 +1,7 @@
-import logging
+"""
+Parse Plex webhooks
+
+"""
 
 import json
 import re
@@ -28,7 +31,7 @@ def parse_webhook(resp):
             out['json'] = parse_json(data)
         elif b'image' in ctype:
             out['poster'] = parse_image(data)
-        
+
     return out
 
 def parse_json(data):
@@ -51,14 +54,14 @@ def parse_image(data):
 
     """
 
-    return b''.join(data).strip() 
+    return b''.join(data).strip()
 
 def get_boundary(val):
     """
     Extract the boundary value from form data
 
     """
- 
+
     try:
         boundary = re.findall(br'boundary=([^\r\n]*)', val)[0]
     except:

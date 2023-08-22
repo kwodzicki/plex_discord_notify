@@ -1,5 +1,9 @@
+"""
+Format and push messages to Discord
+
+"""
+
 import logging
-import os 
 import json
 
 import requests
@@ -7,8 +11,19 @@ import requests
 from .utils import load_hook_url
 
 HOOK_URL = load_hook_url()
+TIMEOUT  = 10.0
 
 def process_plex_webhook(event):
+    """
+    Process a Plex webhook
+
+    Arguments:
+        event (dict) : A parsed Plex webhook event
+
+    Returns:
+        Response object from requests.post()
+
+    """
 
     log = logging.getLogger(__name__)
 
@@ -29,12 +44,12 @@ def process_plex_webhook(event):
         return False
 
     try:
-        r = requests.post(HOOK_URL, files=files)
+        res = requests.post(HOOK_URL, files=files, timeout=TIMEOUT)
     except Exception as err:
         log.exception( err )
         return False
 
-    return r
+    return res
 
 def format_library_new(event):
     """
@@ -47,8 +62,6 @@ def format_library_new(event):
     mtype    = metadata.get('type',    '')
     title    = metadata.get('title',   '')
     year     = metadata.get('year',    '')
-    tag      = metadata.get('tagline', '')
-    rating   = metadata.get('contentRating', '')
     summary  = metadata.get('summary', '')
 
     content = (
@@ -63,6 +76,20 @@ def format_library_new(event):
     )
 
 def build_files(content, poster=None):
+    """
+    Build dict of data to attach
+
+    Arguments:
+        content (str) : Content of message to push to Discord
+
+    Keyword arguments:
+        poster (bytes) : Byte data for media poster to attach
+
+    Returns:
+        dict : Files to attach to the POST request
+            sent to Discord webhook
+
+    """
 
     files    = {}
     payload  = {
@@ -72,7 +99,7 @@ def build_files(content, poster=None):
     if poster is not None:
         payload['embeds'] = [{
             'image' : {
-                'url' : f'attachment://poster.jpg',
+                'url' : 'attachment://poster.jpg',
             }
         }]
         files['poster.jpg'] = poster
@@ -80,5 +107,3 @@ def build_files(content, poster=None):
     files['payload_json'] = (None, json.dumps(payload))
 
     return files
-
-   

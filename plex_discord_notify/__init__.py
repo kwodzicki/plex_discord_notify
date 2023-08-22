@@ -1,3 +1,12 @@
+"""
+Relay for Plex webhook to Discord
+
+Using sockets, Plex webhooks are captured, parsed,
+and pushed to Discord to notify people that new content
+has been added to the Plex server.
+
+"""
+
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -33,9 +42,21 @@ LOG.addHandler(ROT_HANDLER)
 STOP_EVENT = Event()
 
 def stop_handler(*args, **kwargs):
+    """
+    Handler for 'stop' event
+
+    """
 
     STOP_EVENT.set()
 
 def is_running():
+    """
+    Function for if running
+
+    Returns:
+        bool : If no interrupt or kill accepted, then return True,
+            else return False
+
+    """
 
     return not STOP_EVENT.is_set()
