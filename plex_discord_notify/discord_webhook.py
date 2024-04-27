@@ -62,11 +62,16 @@ def format_library_new(event):
     mtype    = metadata.get('type',    '')
     title    = metadata.get('title',   '')
     year     = metadata.get('year',    '')
+    edition  = metadata.get('editionTitle', '')
     summary  = metadata.get('summary', '')
+
+    content = f"{title} ({year})"
+    if edition != '':
+        content = f"{content} - {edition}"
 
     content = (
         f"A new {mtype} has been added to {server}:",
-        f"{title} ({year})",
+        content,
         summary,
     )
 
