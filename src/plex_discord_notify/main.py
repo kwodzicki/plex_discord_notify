@@ -7,17 +7,26 @@ process them in threads.
 """
 
 import logging
+import argparse
 import signal
 import socket
 from threading import Thread
 
-from . import stop_handler, is_running, plex_webhook, discord_webhook, utils
+from . import (
+    stop_handler,
+    is_running,
+    plex_webhook,
+    discord_webhook,
+    utils,
+    ROT_HANDLER,
+)
 
 TIMEOUT = 1.0
 BUFSIZE = 1024
 
 signal.signal(signal.SIGINT,  stop_handler)
 signal.signal(signal.SIGTERM, stop_handler)
+
 
 def main(host='localhost', port=5000, **kwargs):
     """
@@ -40,7 +49,7 @@ def main(host='localhost', port=5000, **kwargs):
             kwargs.get('timeout', TIMEOUT)
         )
         s_obj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s_obj.bind( (host, port) )
+        s_obj.bind((host, port))
         s_obj.listen()
 
         while is_running():
@@ -50,18 +59,25 @@ def main(host='localhost', port=5000, **kwargs):
                 continue
 
             _ = Thread(
-                target = on_new_client,
-                args   = (conn, addr, process_webhook,),
-                kwargs = kwargs,
+                target=on_new_client,
+                args=(conn, addr, process_webhook,),
+                kwargs=kwargs,
             ).start()
     log.info("Socket closed")
 
-def process_webhook(data, *args, event_filters=None, library_filters=None, **kwargs):
+
+def process_webhook(
+    data,
+    *args,
+    event_filters=None,
+    library_filters=None,
+    **kwargs,
+):
     """
     Callback function for webhook processing
 
     This function applies filters to Plex webhooks before
-    passing events to the Discord formatters. 
+    passing events to the Discord formatters.
 
     Arguments:
         data (bytes) : Byte array of data received from socket
@@ -85,7 +101,16 @@ def process_webhook(data, *args, event_filters=None, library_filters=None, **kwa
         return None
     return discord_webhook.process_plex_webhook(event)
 
-def on_new_client(conn, addr, callback, *args, bufsize=BUFSIZE, timeout=TIMEOUT, **kwargs):
+
+def on_new_client(
+    conn,
+    addr,
+    callback,
+    *args,
+    bufsize=BUFSIZE,
+    timeout=TIMEOUT,
+    **kwargs,
+):
     """
     Receive all data from connection
 
@@ -131,3 +156,61 @@ def on_new_client(conn, addr, callback, *args, bufsize=BUFSIZE, timeout=TIMEOUT,
 
             data += tmp
     return callback(data, *args, **kwargs)
+
+
+def cli():
+
+    parser = argparse.ArgumentParser(
+        description=(
+            "Simple relay to capture Plex webhooks, format them, "
+            "and send to Discord"
+        ),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        '--host',
+        type=str,
+        default='localhost',
+        help='Host URL/name to listen for webhooks on',
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=5000,
+        help='Port to listen to on host address for webhooks',
+    )
+    parser.add_argument(
+        '-e', '--event-filters',
+        type=str,
+        nargs='+',
+        default='library.new',
+        help=(
+            'Any number of Plex wehbook events to enable for Discord messaging'
+        )
+    )
+    parser.add_argument(
+        '-l', '--library-filters',
+        type=str,
+        nargs='+',
+        default='movie',
+        help=(
+            'Any number of Plex library section types to enable for Discord '
+            'messaging. Possible types are: "movie", "show", and "artist".'
+        ),
+    )
+    parser.add_argument(
+        '--log-level',
+        type=int,
+        default=30,
+        help='Logging level for the log file',
+    )
+    args = parser.parse_args()
+
+    ROT_HANDLER.setLevel(args.log_level)
+
+    main(
+        host=args.host,
+        port=args.port,
+        event_filters=args.event_filters,
+        library_filters=args.library_filters,
+    )

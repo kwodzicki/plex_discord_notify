@@ -6,6 +6,7 @@ Parse Plex webhooks
 import json
 import re
 
+
 def parse_webhook(resp):
     """
     Parse JSON and image data from Plex Webhook
@@ -34,6 +35,7 @@ def parse_webhook(resp):
 
     return out
 
+
 def parse_json(data):
     """
     Parse JSON from byte string
@@ -43,10 +45,11 @@ def parse_json(data):
     out = {}
     for val in data:
         try:
-            out.update( json.loads(val) )
-        except:
+            out.update(json.loads(val))
+        except Exception:
             pass
     return out
+
 
 def parse_image(data):
     """
@@ -56,6 +59,7 @@ def parse_image(data):
 
     return b''.join(data).strip()
 
+
 def get_boundary(val):
     """
     Extract the boundary value from form data
@@ -64,7 +68,7 @@ def get_boundary(val):
 
     try:
         boundary = re.findall(br'boundary=([^\r\n]*)', val)[0]
-    except:
+    except Exception:
         return None
 
     return b"--" + boundary
