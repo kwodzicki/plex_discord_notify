@@ -27,19 +27,21 @@ os.makedirs(LOGDIR, exist_ok=True)
 
 ROT_HANDLER = RotatingFileHandler(
     os.path.join(LOGDIR, 'plex_discord_notify.log'),
-    maxBytes    = 5 * 2**20,
-    backupCount = 4,
+    maxBytes=5 * 2**20,
+    backupCount=4,
 )
 ROT_HANDLER.setLevel(logging.INFO)
 ROT_HANDLER.setFormatter(
     logging.Formatter(
-        '%(levelname)-.4s - %(asctime)s - %(name)s.%(funcName)-15.15s - %(message)s',
+        '%(levelname)-.4s - %(asctime)s - '
+        '%(name)s.%(funcName)-15.15s - %(message)s',
         '%Y-%m-%d %H:%M:%S',
     )
 )
 LOG.addHandler(ROT_HANDLER)
 
 STOP_EVENT = Event()
+
 
 def stop_handler(*args, **kwargs):
     """
@@ -48,6 +50,7 @@ def stop_handler(*args, **kwargs):
     """
 
     STOP_EVENT.set()
+
 
 def is_running():
     """

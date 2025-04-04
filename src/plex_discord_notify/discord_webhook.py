@@ -11,7 +11,8 @@ import requests
 from .utils import load_hook_url
 
 HOOK_URL = load_hook_url()
-TIMEOUT  = 10.0
+TIMEOUT = 10.0
+
 
 def process_plex_webhook(event):
     """
@@ -46,10 +47,11 @@ def process_plex_webhook(event):
     try:
         res = requests.post(HOOK_URL, files=files, timeout=TIMEOUT)
     except Exception as err:
-        log.exception( err )
+        log.exception(err)
         return False
 
     return res
+
 
 def format_library_new(event):
     """
@@ -57,13 +59,13 @@ def format_library_new(event):
 
     """
 
-    server   = event['json'].get('Server',   {}).get('title', '')
+    server = event['json'].get('Server', {}).get('title', '')
     metadata = event['json'].get('Metadata', {})
-    mtype    = metadata.get('type',    '')
-    title    = metadata.get('title',   '')
-    year     = metadata.get('year',    '')
-    edition  = metadata.get('editionTitle', '')
-    summary  = metadata.get('summary', '')
+    mtype = metadata.get('type', '')
+    title = metadata.get('title', '')
+    year = metadata.get('year', '')
+    edition = metadata.get('editionTitle', '')
+    summary = metadata.get('summary', '')
 
     content = f"{title} ({year})"
     if edition != '':
@@ -79,6 +81,7 @@ def format_library_new(event):
         "\n\n".join(content),
         event.get('poster', None),
     )
+
 
 def build_files(content, poster=None):
     """
@@ -96,15 +99,15 @@ def build_files(content, poster=None):
 
     """
 
-    files    = {}
-    payload  = {
-        'content' : content,
+    files = {}
+    payload = {
+        'content': content,
     }
 
     if poster is not None:
         payload['embeds'] = [{
-            'image' : {
-                'url' : 'attachment://poster.jpg',
+            'image': {
+                'url': 'attachment://poster.jpg',
             }
         }]
         files['poster.jpg'] = poster

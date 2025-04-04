@@ -1,0 +1,37 @@
+[build-system]
+requires = [
+    "setuptools>=61.0",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plex_discord_notify"
+version = "0.2.0"
+description = "Package for catching Plex webhooks and publishing to Discord"
+readme = "README.md"
+authors = [
+    {name="Kyle R. Wodzicki", email="krwodzicki@gmail.com"},
+]
+
+classifiers = [
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Multimedia :: Video",
+]
+
+requires-python = ">=3.9"
+
+dependencies = [
+    "requests",
+]
+
+[project.scripts]
+plex_discord_notify = "plex_discord_notify.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]

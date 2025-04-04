@@ -6,6 +6,7 @@ Utilities for webhook processing
 import logging
 import os
 
+
 def load_hook_url():
     """
     Load Discord webhook URL
@@ -26,6 +27,7 @@ def load_hook_url():
 
     with open(url_file, mode='r') as iid:
         return iid.read().strip()
+
 
 def event_filter(event, filters):
     """
@@ -50,6 +52,7 @@ def event_filter(event, filters):
 
     return True
 
+
 def library_filter(event, filters):
     """
     Filter based on Plex library type
@@ -63,7 +66,6 @@ def library_filter(event, filters):
         bool : True if event matches filters, False otherwise
 
     """
-
 
     if filters is None:
         return True
